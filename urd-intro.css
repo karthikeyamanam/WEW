@@ -1,0 +1,659 @@
+/* ------------------------------------------------------
+   GLOBAL RESET + BASE
+------------------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --panel-bg: #ffffff;
+  --panel-border: #e5e7eb;
+  --panel-hover: #f5f6f8;
+  --panel-radius: 10px;
+
+  --accent: #2563eb;
+  --accent-hover: #1e4ecf;
+
+  --text: #111827;
+  --text-light: #6b7280;
+  --bg: #f3f4f6;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Layout */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------
+   CANVAS WRAPPER
+------------------------------------------------------ */
+#canvasWrapper {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+  padding: 0;
+  z-index: 2;
+
+}
+
+/* ------------------------------------------------------
+   CANVAS
+------------------------------------------------------ */
+#canvas {
+  position: relative;
+  width: 1600px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #e2e5e9;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+
+  /* Grid */
+  background-image:
+    linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
+
+  transform-origin: 0 0;
+}
+
+/* ------------------------------------------------------
+   FLOATING PANELS
+------------------------------------------------------ */
+.floating-pane {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--shadow-sm);
+  position: fixed;
+  overflow: hidden;
+  z-index: 1000;
+  transition: box-shadow 0.2s ease;
+}
+
+.floating-pane:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Panel Header */
+.pane-header {
+  background: #f9fafb;
+  border-bottom: 1px solid var(--panel-border);
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  cursor: move;
+  flex-shrink: 0; /* prevent header from shrinking */
+}
+
+.pane-min-btn {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.pane-min-btn:hover {
+  color: var(--text);
+}
+
+/* ------------------------------------------------------
+   LEFT PANEL (Components)
+------------------------------------------------------ */
+.left-pane.floating {
+  width: 260px;
+  left: 20px;
+  top: 80px;
+  height: 75vh;        /* FIXED HEIGHT */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Component List */
+.components-list {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;     /* scrolls independently */
+  min-height: 0;
+}
+
+.component-item {
+  background: #f3f4f6;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  transition: background 0.2s, border 0.2s;
+}
+
+.component-item:hover {
+  background: var(--panel-hover);
+  border-color: #d1d5db;
+}
+
+.component-item.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------
+   RIGHT PANEL (Layers + Properties)
+------------------------------------------------------ */
+.right-pane.floating {
+  width: 320px;
+  right: 20px;
+  top: 80px;
+  height: 75vh;       /* FIXED HEIGHT */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* LAYERS PANEL */
+#layersPanel {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* PROPERTIES PANEL */
+#propsPanel {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* OLD SCROLL CODE — REMOVED (not needed now)
+.panel-scroll {
+  padding: 14px;
+  overflow-y: auto;
+  max-height: calc(82vh - 60px);
+}
+*/
+
+/* ------------------------------------------------------
+   PROPERTIES INPUTS
+------------------------------------------------------ */
+.prop-group {
+  margin-bottom: 14px;
+}
+
+.prop-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.prop-group input,
+.prop-group select,
+.prop-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.prop-group input:focus,
+.prop-group select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(37,99,235,0.25);
+}
+
+/* ------------------------------------------------------
+   LAYERS PANEL ITEMS
+------------------------------------------------------ */
+.layer-item {
+  padding: 10px 14px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e5e7eb;
+  transition: background 0.2s, border 0.2s;
+}
+
+.layer-item:hover {
+  background: var(--panel-hover);
+  border-color: #d1d5db;
+}
+
+.layer-item.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------
+   CANVAS ELEMENTS
+------------------------------------------------------ */
+.canvas-element {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: move;
+  transition: border-color 0.12s;
+  font-weight: 500;
+   /* 🔑 REQUIRED FOR BORDER RADIUS */
+  overflow: hidden;
+}
+
+.canvas-element.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+  z-index: 5;
+}
+
+/* Resize Handles */
+.resize-handle {
+  width: 10px;
+  height: 10px;
+  border: 2px solid white;
+  background: var(--accent);
+  border-radius: 50%;
+  position: absolute;
+}
+
+.resize-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.resize-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+/* ------------------------------------------------------
+   BUTTONS
+------------------------------------------------------ */
+.btn {
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+}
+
+/* ------------------------------------------------------
+   STATUS BAR
+------------------------------------------------------ */
+.statusbar {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  height: 40px;
+  position: fixed;
+  bottom: 12px;
+  left: 24px;
+  right: 24px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--text-light);
+}
+
+/* ------------------------------------------------------
+   MINIMIZED PANELS
+------------------------------------------------------ */
+.floating-pane.minimized {
+  height: 44px;
+}
+
+.floating-pane.minimized > :not(.pane-header) {
+  display: none !important;
+}
+/* ---------- FIXES & UX IMPROVEMENTS ---------- */
+
+/* Draggable headers only */
+.pane-header {
+  cursor: default;
+}
+
+.floating-header {
+  cursor: move;
+}
+
+/* Responsive canvas */
+#canvas {
+  width: min(1600px, calc(100% - 40px));
+}
+
+/* Prevent resize handles from blocking drag */
+.canvas-element.dragging .resize-handle {
+  pointer-events: none;
+}
+
+/* Sub-section headers */
+.right-pane .pane-header:not(.floating-header) {
+  background: #f3f4f6;
+  font-size: 13px;
+}
+
+/* Secondary buttons */
+.btn.secondary {
+  background: #e5e7eb;
+  color: var(--text);
+}
+
+.btn.secondary:hover {
+  background: #d1d5db;
+}
+/* ================= EDITOR ANIMATIONS ================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+to   { opacity: 1; transform: translateY(0); }
+
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+to   { opacity: 1; transform: translateY(0); }
+
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0px); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px);}
+  to   { opacity: 1; transform: translateX(0px); }
+}
+
+
+
+
+@keyframes fadeOutUp {
+  to { opacity: 0; transform: translateY(-20px); }
+
+}
+
+@keyframes fadeOutDown {
+  to { opacity: 0; transform: translateY(20px); }
+
+}
+
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translate3d(-200px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translate3d(200px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes slideInUp {
+  from { opacity: 0; transform: translate3d(0, 200px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes slideInDown {
+  from { opacity: 0; transform: translate3d(0, -200px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideOutLeft {
+  from { opacity: 1; --tx: 0px; }
+  to   { transform: translateX(-200px);opacity: 0;}
+}
+
+@keyframes slideOutRight {
+  from { opacity: 1; --tx: 0px; }
+  to   { opacity: 0;transform: translateX(200px); }
+}
+
+@keyframes slideUp {
+  from { opacity: 1; --ty: 0px; }
+  to   { opacity: 0; transform: translateY(-200px);}
+}
+
+@keyframes slideDown {
+  from { opacity: 1; --ty: 0px; }
+  to   { opacity: 0; transform: translateY(200px)
+; }
+}
+
+/* ================= SCALE ANIMATIONS ================= */
+/* Scale In */
+@keyframes scaleIn {
+   from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleInSmall {
+    from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleInBig {
+   from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+@keyframes scaleOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.85); }
+}
+
+@keyframes scaleOutSmall {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.7); }
+}
+
+@keyframes scaleOutBig {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.2); }
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bounceScale {
+  0%   { transform: scale(0.3); }
+  60%  { transform: scale(1.08); }
+  80%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.canvas-element {
+  transform:
+    translate3d(var(--tx), var(--ty), 0)
+    scale(var(--scale));
+
+  transition:
+    transform 0.6s cubic-bezier(.22,.61,.36,1),
+    opacity 0.4s ease;
+
+  will-change: transform, opacity;
+}
+/* 🔑 Disable transition while keyframe animation runs */
+.canvas-element[style*="animation"] {
+  transition: none !important;
+}
+
+
+
+
+@keyframes moveXY {
+  from {
+    --tx: var(--from-x);
+    --ty: var(--from-y);
+  }
+  to {
+    --tx: 0px;
+    --ty: 0px;
+  }
+}
+/* ======================================================
+   ANIMATION UTILITY CLASSES (CRITICAL FIX)
+====================================================== */
+
+/* ---------- FADE ---------- */
+.anim-fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.anim-fade-out {
+  animation: fadeOut 0.6s ease forwards;
+}
+
+.anim-fade-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.anim-fade-down {
+  animation: fadeInDown 0.6s ease forwards;
+}
+
+.anim-fade-left {
+  animation: fadeInLeft 0.6s ease forwards;
+}
+
+.anim-fade-right {
+  animation: fadeInRight 0.6s ease forwards;
+}
+
+/* ---------- SLIDE ---------- */
+.anim-slide-left {
+  animation: slideInLeft 0.6s ease forwards;
+}
+
+.anim-slide-right {
+  animation: slideInRight 0.6s ease forwards;
+}
+
+.anim-slide-up {
+  animation: slideInUp 0.6s ease forwards;
+}
+
+.anim-slide-down {
+  animation: slideInDown 0.6s ease forwards;
+}
+
+/* ---------- SCALE ---------- */
+.anim-scale-in {
+  animation: scaleIn 0.45s ease forwards;
+}
+
+.anim-scale-in-small {
+  animation: scaleInSmall 0.45s ease forwards;
+}
+
+.anim-scale-in-big {
+  animation: scaleInBig 0.45s ease forwards;
+}
+
+.anim-scale-out {
+  animation: scaleOut 0.45s ease forwards;
+}
+
+/* ---------- SPECIAL ---------- */
+.anim-pulse {
+  animation: pulse 0.9s ease-in-out infinite;
+}
+
+.anim-bounce {
+  animation: bounceScale 0.6s ease forwards;
+}
+
+/* =======================================================
+   FONT PREVIEW DROPDOWN (Google Font Preview)
+======================================================= */
+
+.font-preview-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+/* On focus highlight */
+.font-preview-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(37,99,235,0.25);
+}
+
+/* Dropdown list styling */
+.font-preview-select option {
+  padding: 6px;
+  font-size: 15px;
+}
